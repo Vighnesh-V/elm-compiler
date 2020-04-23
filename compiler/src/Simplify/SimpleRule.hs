@@ -1,5 +1,4 @@
 module Simplify.SimpleRule (SimpleRule(..), simpleRules) where
-
 import AST.Optimized
 import qualified Data.Name as Name
 import Data.Name (Name)
@@ -19,8 +18,8 @@ global pkg _module funcName =
 revFxn = global Pkg.core "List" "reverse"
 andBop = global Pkg.core "Basics" "and"
 mapFxn = global Pkg.core "List" "map"
-foldFxn = global Pkg.core "List" "fold"
-
+composeFxn = global Pkg.core "Basics" "composeL"
+  
 reverseLiteral :: SimpleRule
 reverseLiteral = SimpleRule revFxn rewrite
   where
@@ -37,9 +36,14 @@ applyAnd = SimpleRule andBop rewrite
     rewrite [expr, Bool True] = Just $ expr
     rewrite _ = Nothing
 
-functionComposition :: SimpleRule
-functionComposition = SimpleRule mapFxn rewrite 
-  where
-    rewrite [Function args body, Call ]
 
+-- List.map (fun x -> to_string x) (fun (y -> y + 1) []) ==> rewrites to
+-- List.map (fun y ->  (Call y body)
+mapComposition :: SimpleRule
+mapComposition = SimpleRule mapFxn rewrite 
+  where
+    rewrite [Function outerArgs outerBody, Call (VarGlobal mapFxn) [Function innerArgs innerBody, rest]] =
+      let compose = Call (VarGlobal composeFxn) [Function outerArgs outerBody, Function innerArgs innerBody] in
+      let mapper = Call (VarGlobal mapFxn) [compose, rest] in
+      Just $ mapper
 simpleRules = [reverseLiteral, applyAnd]

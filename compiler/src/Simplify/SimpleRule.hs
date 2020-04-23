@@ -18,6 +18,8 @@ global pkg _module funcName =
 
 revFxn = global Pkg.core "List" "reverse"
 andBop = global Pkg.core "Basics" "and"
+mapFxn = global Pkg.core "List" "map"
+foldFxn = global Pkg.core "List" "fold"
 
 reverseLiteral :: SimpleRule
 reverseLiteral = SimpleRule revFxn rewrite
@@ -34,5 +36,10 @@ applyAnd = SimpleRule andBop rewrite
     rewrite [Bool True, expr] = Just $ expr
     rewrite [expr, Bool True] = Just $ expr
     rewrite _ = Nothing
+
+functionComposition :: SimpleRule
+functionComposition = SimpleRule mapFxn rewrite 
+  where
+    rewrite [Function args body, Call ]
 
 simpleRules = [reverseLiteral, applyAnd]

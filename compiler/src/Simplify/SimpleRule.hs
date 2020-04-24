@@ -46,4 +46,5 @@ mapComposition = SimpleRule mapFxn rewrite
       let compose = Call (VarGlobal composeFxn) [Function outerArgs outerBody, Function innerArgs innerBody] in
       let mapper = Call (VarGlobal mapFxn) [compose, rest] in
       Just $ mapper
-simpleRules = [reverseLiteral, applyAnd]
+
+simpleRules = [reverseLiteral, applyAnd, mapComposition]
